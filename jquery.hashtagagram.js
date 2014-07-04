@@ -9,7 +9,8 @@ $.fn.hashtagagram = function(options){
 		count: 6,
 		enable_cache: false,
 		cache_duration: 1,
-		cookie_name: 'CachedInstagramPhotos'
+		cookie_name: 'CachedInstagramPhotos',
+		link_photos: true
 	};
 	
 	var self = $(this);
@@ -50,9 +51,15 @@ $.fn.hashtagagram = function(options){
 					return false;
 				var link = $('<a/>'), image = $('<img/>'), li = $('<li/>');
 				image.attr({'src': obj.images.thumbnail.url,'width':defaults.thumb_dimension,'height': defaults.thumb_dimension});
-				link.attr('href',obj.link);
-				image.appendTo(link);
-				link.appendTo(li);
+				
+				if(defaults.link_photos){
+					link.attr('href',obj.link).attr('target','_blank');
+					image.appendTo(link);
+					link.appendTo(li);
+				} else {
+					image.appendTo(li);
+				}
+				
 				ul.append(li);
 			});
 			
