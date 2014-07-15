@@ -2,6 +2,7 @@
 $.fn.hashtagagram = function(options){
 	var defaults = {
 		client_id:'000000000000000000000000',
+		username: false,
 		thumb_dimension:110,
 		success:ProcessData,
 		load_cookie_result:LoadResultsFromCookie,
@@ -10,12 +11,13 @@ $.fn.hashtagagram = function(options){
 		enable_cache: false,
 		cache_duration: 1,
 		cookie_name: 'CachedInstagramPhotos',
-		link_photos: true
+		show_likes: true
 	};
 	
 	var self = $(this);
 	var options = $.extend(defaults,options);
 	defaults.cookie_name = defaults.cookie_name+'_'+defaults.tag_name;
+	
 	var url = 'https://api.instagram.com/v1/tags/'+defaults.tag_name+'/media/recent?client_id='+defaults.client_id;
 	
 	var init = function(){
@@ -45,22 +47,35 @@ $.fn.hashtagagram = function(options){
 	};
 	function ProcessData(response){
 		if(response != null){
-			var ul = $('<ul/>');
+			var ul = $('<ul class="fourGrid"/>');
+			
 			$(response.data).each(function(index,obj){
 				if(index == defaults.count)
 					return false;
-				var link = $('<a/>'), image = $('<img/>'), li = $('<li/>');
-				image.attr({'src': obj.images.thumbnail.url,'width':defaults.thumb_dimension,'height': defaults.thumb_dimension});
 				
-				if(defaults.link_photos){
-					link.attr('href',obj.link).attr('target','_blank');
+				// console.log(obj);
+				
+				if(defaults.username == 1 || defaults.username == obj.user.username) {
+					console.log(obj.user);
+					var link = $('<a/>'), image = $('<img/>'), li = $('<li/>');
+					image.attr({'src': obj.images.low_resolution.url,'width':defaults.thumb_dimension,'height': defaults.thumb_dimension});
+					link.attr('href',obj.link);
+					link.attr('target','_blank');
 					image.appendTo(link);
 					link.appendTo(li);
-				} else {
-					image.appendTo(li);
+					
+					if(defaults.show_likes && obj.likes.count)
+					{
+						var userLikes = $('<span class="instaLikes"><i class="icon-heart"></i> '+obj.likes.count+'</span>');
+						userLikes.appendTo(li);
+					}
+					
+					if(defaults.username == 1){
+						var userInfo = $('<a class="instaUser" href="http://instagram.com/'+obj.user.username+'" target="_blank"><img src="'+obj.user.profile_picture+'"> '+obj.user.username+'</div></a>');
+						userInfo.appendTo(li);
+					}
+					ul.append(li);
 				}
-				
-				ul.append(li);
 			});
 			
 			self.append(ul);
